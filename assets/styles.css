@@ -86,6 +86,30 @@ body{
   font-size:16px;
 }
 
+.tagline-container {
+  text-align: center;
+  margin-top: 1.2rem;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.tagline-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--ink); /* consistent with body text */
+  font-family: 'Poppins', sans-serif;
+  margin: 0.5rem 0;
+}
+
+.tagline-subtitle {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--muted-ink);
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+}
+
+
 /* ---------- TOP ACTIONS ---------- */
 .top-actions{
   margin-top:18px;

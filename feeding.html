@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FOMA — Feeding Items</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff9f2;--accent:#ffd7e0;--primary:#ff9bb3;--paper:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:Poppins,system-ui;background:linear-gradient(180deg,var(--bg),#fffaf6);color:#2b2b2b;padding:20px}
+.container{max-width:1000px;margin:0 auto}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{font-family:"Patrick Hand",cursive;color:var(--primary);font-size:20px}
+.back{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:#2b2b2b;padding:8px 12px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);background:var(--paper)}
+h1{margin:6px 0 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.prod{background:var(--paper);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.05)}
+.art{height:100px;border-radius:10px;background:linear-gradient(180deg,var(--accent),#fff);display:flex;align-items:center;justify-content:center}
+.row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.buy{margin-left:auto;padding:8px 12px;border-radius:8px;background:linear-gradient(180deg,var(--primary),#ff6d8f);color:white;border:none;cursor:pointer}
+footer{margin-top:18px;color:#6b6b6b;font-size:13px}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a class="back" href="catalogue.html" aria-label="Back to catalogue">← Back to catalogue</a>
+      <div class="brand">FOMA — Feeding</div>
+      <a class="back" href="catalogue.html" aria-label="Open catalogue in new tab" target="_blank" rel="noopener">Open catalogue</a>
+    </div>
+
+    <h1>Feeding Items</h1>
+    <p style="color:#6b6b6b">Bowls, spoons, bibs and starter kits for feeding time.</p>
+
+    <section class="grid" id="feedGrid">
+      <article class="prod" data-id="f1" data-title="Spoon & Bowl Set" data-price="0">
+        <div class="art"><svg width="60" height="60" viewBox="0 0 64 64"><rect x="8" y="12" width="48" height="40" rx="6" fill="#fff3e6"/></svg></div>
+        <h4>Spoon & Bowl Starter Set</h4>
+        <div style="color:#6b6b6b">Condition: Like New · Free / Donate</div>
+        <div class="row">
+          <button class="buy" data-action="buy">Claim</button>
+        </div>
+      </article>
+
+      <article class="prod" data-id="f2" data-title="Silicone Feeding Set" data-price="7">
+        <div class="art"><svg width="60" height="60" viewBox="0 0 64 64"><rect x="10" y="12" width="44" height="40" rx="6" fill="#fff3f6"/></svg></div>
+        <h4>Silicone Feeding Set</h4>
+        <div style="color:#6b6b6b">Condition: New · $7</div>
+        <div class="row"><button class="buy" data-action="buy">Buy</button></div>
+      </article>
+
+      <article class="prod" data-id="f3" data-title="Bib Pack (5)" data-price="5">
+        <div class="art"><svg width="60" height="60" viewBox="0 0 64 64"><path d="M12 12h40v40H12z" fill="#ffd7e0"/></svg></div>
+        <h4>Bib Pack (5)</h4>
+        <div style="color:#6b6b6b">Condition: Gently Used · $5</div>
+        <div class="row"><button class="buy" data-action="buy">Buy</button></div>
+      </article>
+    </section>
+
+    <footer>
+      <small>Purchases are simulated and saved locally (no real payments). Key: <code>foma_purchases</code>.</small>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  document.querySelectorAll('.prod .buy').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const p = this.closest('.prod');
+      const id = encodeURIComponent(p.dataset.id || ('p'+Date.now()));
+      const title = encodeURIComponent(p.dataset.title || p.querySelector('h4').innerText);
+      const price = encodeURIComponent(p.dataset.price || '0');
+      location.href = `checkout_stub.html?id=${id}&title=${title}&price=${price}&qty=1`;
+    });
+  });
+})();
+</script>
+</body>
+</html>

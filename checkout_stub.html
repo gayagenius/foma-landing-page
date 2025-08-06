@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FOMA — Checkout</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600,700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff9f2;--paper:#fff;--primary:#ff9bb3}
+*{box-sizing:border-box}body{margin:0;font-family:Poppins,system-ui;background:linear-gradient(180deg,var(--bg),#fffaf6);color:#222;padding:20px}
+.container{max-width:720px;margin:0 auto;background:var(--paper);padding:18px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.06)}
+h1{font-family:"Patrick Hand",cursive;color:var(--primary);margin:0 0 8px 0}
+.summary{display:flex;gap:12px;align-items:center;margin-top:12px}
+.summary .details{flex:1}
+.row{display:flex;align-items:center;gap:10px}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
+.btn-primary{background:linear-gradient(180deg,var(--primary),#ff6d8f);color:white}
+.note{color:#6b6b6b;font-size:14px;margin-top:12px}
+.success{padding:12px;background:#e9ffef;border-radius:10px;color:#0b6a3a;margin-top:12px;display:none}
+small{color:#6b6b6b}
+</style>
+</head>
+<body>
+  <div class="container" role="main">
+    <h1>Checkout (Stub)</h1>
+    <p class="note">This is a simulated checkout page. No real payment will be processed.</p>
+
+    <div id="orderBox" class="summary" aria-live="polite">
+      <div class="details">
+        <div id="itemTitle" style="font-weight:700">—</div>
+        <div id="itemMeta"><small id="itemPrice">Price: $0</small></div>
+      </div>
+      <div>
+        <label>Qty
+          <select id="qty" aria-label="Quantity">
+            <option>1</option><option>2</option><option>3</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button id="payBtn" class="btn btn-primary">Pay (simulate)</button>
+      <button id="cancelBtn" class="btn">Cancel</button>
+    </div>
+
+    <div id="result" class="success" role="status" aria-live="polite">
+      <strong>Success!</strong> Your simulated payment was accepted and saved locally.
+      <div style="margin-top:8px"><a id="backToCatalog" href="catalogue.html">Back to catalogue</a></div>
+    </div>
+
+    <div style="margin-top:14px"><small>You can inspect saved purchases in your browser's DevTools → Application → Local Storage under key <code>foma_purchases</code>.</small></div>
+  </div>
+
+<script>
+(function(){
+  // read query params
+  function qs(key){ const params = new URLSearchParams(location.search); return params.get(key); }
+  const id = qs('id') || ('p'+Date.now());
+  const title = decodeURIComponent(qs('title') || 'Item');
+  const price = Number(qs('price') || 0);
+  const qtyEl = document.getElementById('qty');
+  const itemTitle = document.getElementById('itemTitle');
+  const itemPrice = document.getElementById('itemPrice');
+  const payBtn = document.getElementById('payBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const result = document.getElementById('result');
+
+  itemTitle.textContent = title;
+  itemPrice.textContent = price > 0 ? 'Price: $' + price : 'Price: Free / Donation';
+
+  // If URL specified qty, set it
+  const qFromUrl = qs('qty');
+  if(qFromUrl) { qtyEl.value = qFromUrl; }
+
+  cancelBtn.addEventListener('click', function(){ location.href = 'catalogue.html'; });
+
+  payBtn.addEventListener('click', function(){
+    const qty = Number(qtyEl.value || 1);
+    const record = { id, title, price, qty, ts: new Date().toISOString() };
+    const stored = JSON.parse(localStorage.getItem('foma_purchases') || '[]');
+    stored.push(record);
+    localStorage.setItem('foma_purchases', JSON.stringify(stored));
+    // show success and hide pay button
+    result.style.display = 'block';
+    payBtn.disabled = true;
+    payBtn.textContent = 'Paid';
+    // optionally redirect after a short delay
+    setTimeout(()=>{ location.href = 'catalogue.html'; }, 1600);
+  });
+})();
+</script>
+</body>
+</html>

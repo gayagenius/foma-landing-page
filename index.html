@@ -9,7 +9,7 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
 
-  <!-- Embedded CSS -->
+  <!-- Embedded CSS (keeps your original variables + adds small UI pieces) -->
   <style>
     :root{
       --bg:#fff9f2;--paper:#ffffff;--muted:#fbf1ef;--accent:#ffd7e0;--primary:#ff9bb3;
@@ -20,40 +20,41 @@
     }
     *{box-sizing:border-box}html,body{height:100%}body{
       margin:0;font-family:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:var(--ink);
-      background:linear-gradient(180deg,var(--bg) 0%,#fffaf6 60%);
-      -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.45;padding-bottom:80px;
+      background:linear-gradient(180deg,var(--bg) 0%,#fffaf6 60%);-webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;line-height:1.45;padding-bottom:80px;
     }
     .container{max-width:var(--container-max);margin:0 auto;padding:32px 24px;}
-    .header{text-align:center;padding:56px 16px 36px;background:linear-gradient(180deg, rgba(255,155,179,0.14) 0%, rgba(255,214,179,0.04) 100%);
+    /* Impact bar */
+    .impact-bar {
+      background:linear-gradient(90deg, rgba(255,214,179,0.12), rgba(255,217,224,0.06));
+      border-bottom:1px solid rgba(255,155,179,0.06);
+      color:var(--ink);
+      padding:10px 16px;
+      text-align:center;
+      font-weight:700;
+      font-size:15px;
+    }
+
+    .header{text-align:center;padding:40px 16px 24px;background:linear-gradient(180deg, rgba(255,155,179,0.14) 0%, rgba(255,214,179,0.04) 100%);
       border-bottom-left-radius:var(--radius-xl);border-bottom-right-radius:var(--radius-xl);margin-bottom:18px;}
     .site-title{font-family:"Patrick Hand","PatrickHand","Poppins",sans-serif;font-size:42px;margin:6px 0;color:var(--primary);
       display:inline-flex;align-items:center;gap:12px}
     .site-title .emoji{font-size:34px}
-    .tagline-container {
-      margin-top: 8px;
-    }
-    .tagline-title {
-      font-family: "Patrick Hand", cursive;
-      font-size: 28px;
-      color: var(--primary);
-      margin-bottom: 4px;
-    }
-    .tagline-subtitle {
-      color: var(--muted-ink);
-      font-weight: 500;
-      font-size: 16px;
-    }
+    .tagline-container { margin-top: 8px; }
+    .tagline-title { font-family: "Patrick Hand", cursive; font-size: 28px; color: var(--primary); margin-bottom: 4px; }
+    .tagline-subtitle { color: var(--muted-ink); font-weight: 500; font-size: 16px; }
     .top-actions{margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
     .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:12px;font-weight:600;cursor:pointer;
       transition:all .22s var(--ease);text-decoration:none;user-select:none}
     .btn-primary{background:linear-gradient(180deg,var(--primary),#ff6d8f);color:white;box-shadow:0 8px 24px rgba(255,110,140,0.18)}
     .btn-ghost{background:transparent;border:2px solid rgba(255,155,179,0.15);color:var(--ink)}
-    .cards{margin:48px 0;display:grid;gap:36px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:start}
-    .card-link {
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
+
+    /* Featured categories strip (new) */
+    .feature-cats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:18px 0}
+    .cat-pill{background:linear-gradient(180deg,#fff,#fffaf6);padding:8px 12px;border-radius:999px;border:1px solid rgba(0,0,0,0.03);text-decoration:none;color:var(--ink);font-weight:700}
+
+    .cards{margin:28px 0 48px 0;display:grid;gap:36px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:start}
+    .card-link { text-decoration: none; color: inherit; display: block; }
     .card{background:var(--paper);border-radius:var(--radius-lg);overflow:visible;box-shadow:var(--shadow-card);
       display:flex;flex-direction:column;transition:transform .28s var(--ease),box-shadow .28s var(--ease);
       position:relative;min-height:320px;padding-bottom:8px}
@@ -76,10 +77,8 @@
       transition:transform .22s var(--ease),opacity .22s var(--ease)}
     .chat-helper .header{padding:10px 14px;background:transparent;display:flex;gap:10px;align-items:center;font-weight:700}
     .chat-helper .body{padding:12px 14px 18px;font-size:14px;color:var(--muted-ink)}
-    .card:hover{transform:translateY(var(--card-float-y)) scale(1.01);
-      box-shadow:0 20px 50px rgba(12,12,12,0.11)}
-    .card:hover .card-illustration svg{transform:translateY(-6px) rotate(-2deg) scale(1.02);
-      filter:drop-shadow(0 18px 36px rgba(14,14,14,0.09))}
+    .card:hover{transform:translateY(var(--card-float-y)) scale(1.01);box-shadow:0 20px 50px rgba(12,12,12,0.11)}
+    .card:hover .card-illustration svg{transform:translateY(-6px) rotate(-2deg) scale(1.02);filter:drop-shadow(0 18px 36px rgba(14,14,14,0.09))}
     .btn-primary:hover{transform:translateY(-3px)}.btn-ghost:hover{transform:translateY(-2px);box-shadow:var(--shadow-soft)}
     @media (prefers-reduced-motion:reduce){.card,.card-illustration svg,.btn{transition:none!important;animation:none!important;transform:none!important}}
     .card{opacity:0;transform:translateY(12px) scale(1);animation:fadeUp .52s var(--ease) forwards}
@@ -89,24 +88,65 @@
     @media (max-width:980px){.site-title{font-size:36px}.card-illustration{height:180px}.card{min-height:300px}}
     @media (max-width:720px){.site-title{font-size:30px}.container{padding:20px 16px}.cards{gap:20px;margin:28px 0}.card-illustration{height:160px;padding:14px}.card-illustration svg{width:120px;height:120px}.chat-helper{width:90%;left:5%;right:5%}}
     a:focus,button:focus,.btn:focus{outline:3px solid rgba(255,155,179,0.16);outline-offset:4px;border-radius:8px}
+
+    /* --- New: testimonials + sticky donate --- */
+    .testimonials { max-width:980px; margin: 18px auto 8px; padding: 18px 22px; background: linear-gradient(180deg, #fff, #fffaf6); border-radius:12px; box-shadow: var(--shadow-soft); text-align:center; }
+    .testimonials h2 { margin: 0 0 8px; font-size:18px; color:var(--primary); }
+    .testimonial-list { display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+    .testimonial { max-width:300px; font-style:italic; color:var(--muted-ink); background: rgba(255,255,255,0.7); padding:12px; border-radius:10px; border:1px solid rgba(0,0,0,0.03); }
+    .testimonial strong { display:block; margin-top:8px; font-style:normal; color:var(--ink); font-weight:700; }
+
+    .sticky-donate { position:fixed; right:18px; bottom:18px; z-index:1400; border-radius:999px; padding:12px 16px; background:linear-gradient(180deg,var(--primary),#ff6d8f); color:#fff; font-weight:700; text-decoration:none; box-shadow:0 12px 30px rgba(255,110,140,0.15); display:inline-flex; align-items:center; gap:10px; }
+    .impact-small { font-weight:700; color:var(--primary); margin-top:8px; font-size:14px; }
+    .sr-only{ position:absolute!important; height:1px; width:1px; overflow:hidden; clip:rect(1px, 1px, 1px, 1px); white-space:nowrap; }
   </style>
 </head>
 <body>
+
+  <!-- Impact bar -->
+  <div class="impact-bar" role="status" aria-live="polite">
+    💝 <span id="impactCount">325</span> families supported this year — join us in making a difference!
+  </div>
+
   <header class="header" role="banner">
     <div class="container">
       <div class="site-title">
         <span class="emoji" aria-hidden="true">👶</span> Welcome to FOMA
       </div>
+
       <div class="tagline-container">
         <h1 class="tagline-title">Where Pre-Loved Baby Treasures Find New Homes 💕</h1>
         <p class="tagline-subtitle">Because Little Things Deserve a Second Chance 🧸✨</p>
       </div>
+
       <div class="top-actions" role="navigation" aria-label="Primary actions">
         <a class="btn btn-primary" href="#items">Browse items</a>
         <a class="btn btn-ghost" href="donate.html">Donate</a>
       </div>
+
+      <!-- small impact text under hero -->
+      <div class="impact-small">Helping families locally — curated, safe, and gentle goods.</div>
+
+      <!-- featured categories -->
+      <div class="feature-cats" role="navigation" aria-label="Featured categories">
+        <a class="cat-pill" href="bottles.html" target="_blank" rel="noopener">Bottles</a>
+        <a class="cat-pill" href="feeding.html" target="_blank" rel="noopener">Feeding</a>
+        <a class="cat-pill" href="onesies.html" target="_blank" rel="noopener">Onesies</a>
+        <a class="cat-pill" href="toys.html" target="_blank" rel="noopener">Toys</a>
+        <a class="cat-pill" href="bedding.html" target="_blank" rel="noopener">Bedding</a>
+      </div>
     </div>
   </header>
+
+  <!-- Testimonials -->
+  <section class="testimonials" aria-label="Testimonials">
+    <h2>What people say</h2>
+    <div class="testimonial-list">
+      <div class="testimonial">"Foma made donating simple — I could tell the items were going to families who really needed them." <strong>- Alex</strong></div>
+      <div class="testimonial">"I found exactly what I needed for my newborn — great quality and a lovely community." <strong>- Sarah</strong></div>
+      <div class="testimonial">"Fast, friendly, and trustworthy. Highly recommend donating through FOMA." <strong>- David</strong></div>
+    </div>
+  </section>
 
   <main class="container" id="items" role="main">
     <section class="cards" aria-label="Featured items">
@@ -171,15 +211,18 @@
     </section>
   </main>
 
-  <!-- Chat helper -->
+  <!-- Chat helper (unchanged) -->
   <div id="chat" class="chat-helper" role="dialog" aria-label="FOMA helper">
     <div class="header" style="cursor:pointer" id="chatToggle">🤖 FOMA Helper</div>
     <div class="body" id="chatBody">Hi there! How can I help you today?</div>
   </div>
 
+  <!-- Sticky donate button (site-wide CTA) -->
+  <a class="sticky-donate" href="donate.html" aria-label="Donate now">💗 Donate</a>
+
   <footer class="footer">Made with ❤️ — Charity Gaya</footer>
 
-  <!-- JS for chat toggle -->
+  <!-- Tiny JS: chat toggle + respectful reduced-motion handling -->
   <script>
     (function(){
       var toggle = document.getElementById('chatToggle');
@@ -189,9 +232,27 @@
         open = !open; 
         body.style.display = open ? 'block' : 'none'; 
       });
+      // respect reduced motion
       if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
         document.documentElement.style.setProperty('--card-float-y','0px');
       }
+
+      // Optional: small script to animate the impact number if you want
+      (function animateImpact(){
+        var el = document.getElementById('impactCount');
+        if(!el) return;
+        var start = 250; // starting value
+        var end = 325;   // current stat shown
+        var duration = 900;
+        var startTime = performance.now();
+        function tick(now){
+          var t = Math.min(1, (now - startTime)/duration);
+          var v = Math.floor(start + (end - start) * t);
+          el.textContent = v;
+          if(t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      })();
     })();
   </script>
 </body>

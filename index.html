@@ -101,6 +101,343 @@
     .sr-only{ position:absolute!important; height:1px; width:1px; overflow:hidden; clip:rect(1px, 1px, 1px, 1px); white-space:nowrap; }
   </style>
 </head>
+
+<!-- FOMA Fairy: Offline AI chat bubble (thumbnails, list-item mailto + GitHub issue, personality) -->
+<style>
+  /* Floating bubble + chat window styles (kept compact) */
+  .foma-fairy-button{position:fixed;right:20px;bottom:22px;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ff9aa2,#ffdde1);box-shadow:0 6px 18px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:9999;border:none}
+  .foma-fairy-button img{width:40px;height:40px}
+  .foma-chat{position:fixed;right:20px;bottom:96px;width:360px;max-height:70vh;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(20,20,40,.18);z-index:9999;overflow:hidden;display:none;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}
+  .foma-chat.open{display:flex;flex-direction:column}
+  .foma-header{background:linear-gradient(90deg,#ff9aa2,#ffdde1);color:#3b2b2b;padding:12px;display:flex;align-items:center;gap:8px}
+  .foma-header .title{font-weight:700;font-size:15px}
+  .foma-messages{padding:12px;overflow:auto;flex:1;background:linear-gradient(180deg,#fff,#fffaf8)}
+  .msg{margin-bottom:10px;max-width:85%;line-height:1.35}
+  .msg.ai{background:#fff;padding:8px 10px;border-radius:10px;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+  .msg.user{margin-left:auto;background:#ffefef;padding:8px 10px;border-radius:10px}
+  .foma-input{display:flex;gap:8px;padding:10px;border-top:1px solid #f2e6e6;background:white}
+  .foma-input input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #eee;outline:none;font-size:14px}
+  .foma-input button{padding:8px 12px;border-radius:8px;border:none;background:#ff9aa2;color:white;cursor:pointer}
+  .foma-suggests{display:flex;gap:8px;padding:10px;flex-wrap:wrap; border-top:1px solid #f7efef}
+  .foma-chip{background:#fff6f6;padding:6px 8px;border-radius:999px;font-size:13px;cursor:pointer;border:1px solid #ffe6e6}
+  .item-row{display:flex;gap:10px;align-items:flex-start;margin-top:8px}
+  .item-row img{width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid #f2e6e6}
+  .item-meta{flex:1}
+  .item-meta .title{font-weight:600}
+  .item-actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+  .foma-btn{padding:6px 8px;border-radius:8px;border:none;cursor:pointer}
+  .foma-btn.mail{background:#4caf50;color:white}
+  .foma-btn.github{background:#24292f;color:white}
+  .typing{width:36px;height:16px;display:flex;gap:4px;align-items:center}
+  .dot{width:6px;height:6px;background:#ccc;border-radius:50%;animation:blink 1s infinite}
+  .dot:nth-child(2){animation-delay:.12s}.dot:nth-child(3){animation-delay:.24s}
+  @keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+  .small-muted{font-size:12px;color:#6b6b6b;margin-top:6px}
+  .foma-footer-note{font-size:12px;color:#888;padding:8px 12px;border-top:1px solid #f7efef;background:#fffaf8}
+</style>
+
+<div class="foma-fairy-button" id="fomaToggle" aria-label="Open FOMA Fairy">
+  <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'><path d='M12 2a4 4 0 00-4 4 4 4 0 004 4 4 4 0 004-4 4 4 0 00-4-4zm0 12c-3.3 0-9 1.67-9 5v1h18v-1c0-3.33-5.7-5-9-5z'/></svg>" alt="FOMA Fairy">
+</div>
+
+<div class="foma-chat" id="fomaChat" role="dialog" aria-label="FOMA Fairy chat">
+  <div class="foma-header">
+    <div style="width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center">
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff6f91' width='18' height='18'><path d='M12 2a4 4 0 00-4 4 4 4 0 004 4 4 4 0 004-4 4 4 0 00-4-4zM6 14c0-1.66 3.58-3 6-3s6 1.34 6 3v2H6v-2z'/></svg>" alt="">
+    </div>
+    <div style="flex:1">
+      <div class="title">FOMA Fairy</div>
+      <div class="small-muted" id="fomaHint">Ask to give or get baby items — try "stroller" or "crib".</div>
+    </div>
+    <button style="background:transparent;border:none;cursor:pointer" id="fomaClose" aria-label="Close chat">✕</button>
+  </div>
+
+  <div class="foma-messages" id="fomaMessages" aria-live="polite"></div>
+
+  <div class="foma-suggests" id="fomaSuggests" style="border-top:1px solid #f7efef">
+    <div class="foma-chip" data-q="stroller">stroller</div>
+    <div class="foma-chip" data-q="crib">crib</div>
+    <div class="foma-chip" data-q="bottle">bottle</div>
+    <div class="foma-chip" data-q="car seat">car seat</div>
+    <div class="foma-chip" data-q="carrier">carrier</div>
+  </div>
+
+  <div class="foma-input" role="form" aria-label="FOMA input">
+    <input id="fomaInput" placeholder="Try: 'I want a stroller' or 'I want to donate a crib'">
+    <button id="fomaSend">Send</button>
+  </div>
+
+  <div class="foma-footer-note">Tip: click an item's **List** button to create a prefilled email or GitHub issue to contact the lister.</div>
+</div>
+
+<script>
+(function(){
+  /* ---------- CONFIG ---------- */
+  // Replace this with your repo (owner/repo) if you'd like GitHub issue links to open
+  const GITHUB_REPO = "gayagenius/foma-landing-page"; // or "" to disable GitHub flow
+
+  // Choose personality: "playful" | "friendly" | "professional"
+  const PERSONALITY = "playful";
+
+  /* ---------- CATALOG (edit titles, thumbnails, tags, notes) ---------- */
+  // Thumbnails are inline SVG data-URIs used as placeholders. Replace with real image URLs if available.
+  const catalog = [
+    {
+      id: 1,
+      title: "Chicco Lite Stroller (Gently-used)",
+      tags: ["stroller","lightweight","city"],
+      cond: "Good",
+      notes: "Folds compactly; ideal for naps on walks.",
+      thumbnail: svgThumb("#ffdcdc","#ff6f91","S")
+    },
+    {
+      id: 2,
+      title: "Graco Convertible Car Seat",
+      tags: ["car seat","safety","infant"],
+      cond: "Excellent",
+      notes: "Up to 65 lbs; easy install.",
+      thumbnail: svgThumb("#e6f7ff","#2b9af3","C")
+    },
+    {
+      id: 3,
+      title: "Wooden Baby Crib (IKEA)",
+      tags: ["crib","bed","wooden"],
+      cond: "Good",
+      notes: "Slatted sides; mattress not included.",
+      thumbnail: svgThumb("#fff7e6","#ffb74d","B")
+    },
+    {
+      id: 4,
+      title: "Nursing Pillow - SupportPro",
+      tags: ["pillow","nursing","feeding"],
+      cond: "Like-new",
+      notes: "Removable cover; machine washable.",
+      thumbnail: svgThumb("#f0fff4","#4caf50","P")
+    },
+    {
+      id: 5,
+      title: "Tommee Tippee Bottle Set",
+      tags: ["bottle","feeding","newborn"],
+      cond: "New",
+      notes: "BPA-free, slow flow nipples.",
+      thumbnail: svgThumb("#fff0f6","#ff4081","T")
+    },
+    {
+      id: 6,
+      title: "ErgoBaby Carrier",
+      tags: ["carrier","wrap","babywearing"],
+      cond: "Very Good",
+      notes: "Ergonomic; supports newborns.",
+      thumbnail: svgThumb("#f6f7ff","#6a6cff","E")
+    }
+  ];
+
+  /* small helper to create an inline SVG thumbnail (colored circle with letter) */
+  function svgThumb(bg, fg, letter){
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect rx='12' width='120' height='120' fill='${bg}'/><circle cx='36' cy='36' r='28' fill='${fg}'/><text x='36' y='44' font-size='28' font-family='Arial' fill='white' text-anchor='middle'>${letter}</text></svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  /* ---------- UI refs ---------- */
+  const toggle = document.getElementById('fomaToggle');
+  const chat = document.getElementById('fomaChat');
+  const close = document.getElementById('fomaClose');
+  const messages = document.getElementById('fomaMessages');
+  const input = document.getElementById('fomaInput');
+  const send = document.getElementById('fomaSend');
+  const suggests = document.getElementById('fomaSuggests');
+  const hint = document.getElementById('fomaHint');
+
+  /* ---------- Personality messages ---------- */
+  const VOICES = {
+    playful: {
+      greet: "Hey hey! I'm FOMA Fairy ✨ — I help people **give** or **get** baby items. Try 'stroller' or 'donate crib'.",
+      notfound: "Hmm — couldn't find a perfect match in the mini-catalog. Try shorter keywords like **'stroller'** or **'bottle'**.",
+      listIntro: "Nice choice! I can help you list this item — I'll compose a short message for email or GitHub."
+    },
+    friendly: {
+      greet: "Hi — I'm the FOMA Fairy. I can help you find or list baby items. Try: 'I want a stroller' or 'I want to donate a crib'.",
+      notfound: "I couldn't find an exact match in the small catalog. Try keywords like **stroller** or **crib**.",
+      listIntro: "Great — I prepared a prefilled message you can send by email or open as a GitHub issue."
+    },
+    professional: {
+      greet: "Hello. I am FOMA Fairy — an assistant to help list or locate baby items. Try: 'stroller' or 'donate crib'.",
+      notfound: "No exact matches were found in the local catalog. Please try concise keywords such as **stroller** or **crib**.",
+      listIntro: "Prepared a prefilled contact message; you may send it via email or create a GitHub issue."
+    }
+  };
+  const voice = VOICES[PERSONALITY] || VOICES.friendy;
+
+  /* ---------- helpers: UI messaging ---------- */
+  function addMessage(html, who='ai'){
+    const el = document.createElement('div');
+    el.className = 'msg ' + (who === 'user' ? 'user' : 'ai');
+    el.innerHTML = html;
+    messages.appendChild(el);
+    messages.scrollTop = messages.scrollHeight;
+  }
+  function showTyping(){
+    const el = document.createElement('div');
+    el.className = 'msg ai';
+    el.innerHTML = `<div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+    messages.appendChild(el);
+    messages.scrollTop = messages.scrollHeight;
+    return el;
+  }
+
+  /* ---------- matching & formatting ---------- */
+  function scoreQuery(q, item){
+    q = q.toLowerCase();
+    const tokens = q.split(/\W+/).filter(Boolean);
+    let score = 0;
+    tokens.forEach(t => {
+      if (item.title.toLowerCase().includes(t)) score += 3;
+      if (item.tags.some(tag=> tag.includes(t))) score += 2;
+      if (item.notes && item.notes.toLowerCase().includes(t)) score += 1;
+      if (t.length > 3 && item.title.toLowerCase().includes(t)) score += 1;
+    });
+    if (/new|excellent|like-new/.test(item.cond.toLowerCase())) score += 0.5;
+    return score;
+  }
+
+  function findMatches(q){
+    const lowered = (q||'').toLowerCase();
+    const intent = /donate|give|offering|selling|sell|i have|i'm giving/i.test(q) ? 'give' :
+                   /get|want|need|looking for|find|search|i need|i want/i.test(q) ? 'get' : 'unknown';
+    const scored = catalog.map(item => ({ item, score: scoreQuery(lowered, item) }));
+    scored.sort((a,b)=> b.score - a.score);
+    const top = scored.filter(s => s.score > 0).slice(0,6);
+    return { intent, results: top.map(s=>s.item) };
+  }
+
+  function formatResults(results, intent){
+    if (!results || results.length === 0){
+      return { html: `<div>${voice.notfound}</div>`, followups: ["stroller","crib","bottle"] };
+    }
+    let html = `<div>${intent === 'give' ? 'Thanks for offering — here are some items you could list:' : 'Here are items that match your request:'}</div>`;
+    results.slice(0,4).forEach(it=>{
+      html += `
+        <div class="item-row" data-id="${it.id}">
+          <img src="${it.thumbnail}" alt="${escapeHtml(it.title)} thumbnail">
+          <div class="item-meta">
+            <div class="title">${escapeHtml(it.title)}</div>
+            <div style="font-size:13px;color:#666">${escapeHtml(it.cond)} · ${escapeHtml(it.notes)}</div>
+            <div class="item-actions">
+              <button class="foma-btn mail" data-action="mail" data-id="${it.id}">Email lister</button>
+              <button class="foma-btn github" data-action="github" data-id="${it.id}">Open GitHub issue</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    return { html, followups: results.slice(0,6).map(r=>r.title) };
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]); });
+  }
+
+  /* ---------- respond ---------- */
+  async function respond(q){
+    const typingNode = showTyping();
+    const delay = 400 + Math.min(1200,(q||'').length*18);
+    await new Promise(r=>setTimeout(r,delay));
+
+    const { intent, results } = findMatches(q);
+    const formatted = formatResults(results, intent);
+    messages.removeChild(typingNode);
+    addMessage(formatted.html, 'ai');
+    updateSuggests(formatted.followups);
+  }
+
+  /* ---------- suggestion chips ---------- */
+  function updateSuggests(arr){
+    suggests.innerHTML = '';
+    arr = Array.isArray(arr) ? arr : ["stroller","crib","bottle"];
+    arr.slice(0,6).forEach(a=>{
+      const chip = document.createElement('div');
+      chip.className = 'foma-chip';
+      chip.textContent = a;
+      chip.dataset.q = a;
+      suggests.appendChild(chip);
+    });
+  }
+
+  /* ---------- send handlers ---------- */
+  function handleSend(){
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(escapeHtml(text), 'user');
+    input.value = '';
+    respond(text);
+  }
+  send.addEventListener('click', handleSend);
+  input.addEventListener('keydown', (e)=> { if (e.key === 'Enter') handleSend(); });
+
+  suggests.addEventListener('click', (e)=>{
+    const q = e.target.closest('.foma-chip')?.dataset?.q;
+    if (!q) return;
+    input.value = q;
+    setTimeout(()=> { input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'})); }, 120);
+  });
+
+  /* ---------- item action buttons (mailto + GitHub issue) ---------- */
+  messages.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    const item = catalog.find(i=>i.id === id);
+    if (!item) return;
+    const subject = encodeURIComponent(`Listing inquiry: ${item.title}`);
+    const bodyText = `Hi —\n\nI'm interested in this item: ${item.title}\nCondition: ${item.cond}\nNotes: ${item.notes}\n\nCould you share availability and pickup/delivery details?\n\nThanks,\n[Your name]`;
+    const body = encodeURIComponent(bodyText);
+
+    if (btn.dataset.action === 'mail'){
+      // open mailto
+      const mailto = `mailto:?subject=${subject}&body=${body}`;
+      window.open(mailto,'_blank');
+    } else if (btn.dataset.action === 'github'){
+      // open GitHub issue new URL if repo configured, otherwise fallback to mailto
+      if (GITHUB_REPO && GITHUB_REPO.includes('/')){
+        const ghTitle = subject;
+        const ghBody = body;
+        const issuesUrl = `https://github.com/${encodeURIComponent(GITHUB_REPO)}/issues/new?title=${ghTitle}&body=${ghBody}`;
+        window.open(issuesUrl,'_blank');
+      } else {
+        // fallback
+        const mailto = `mailto:?subject=${subject}&body=${body}`;
+        window.open(mailto,'_blank');
+      }
+    }
+  });
+
+  /* ---------- open/close chat ---------- */
+  toggle.addEventListener('click', openChat);
+  close.addEventListener('click', closeChat);
+  function openChat(){
+    chat.classList.add('open');
+    toggle.style.transform = 'scale(.95)';
+    setTimeout(()=> toggle.style.transform = '',150);
+    if (!chat.dataset.started) {
+      chat.dataset.started = '1';
+      addMessage(voice.greet, 'ai');
+    }
+    input.focus();
+  }
+  function closeChat(){ chat.classList.remove('open'); toggle.focus(); }
+
+  /* ---------- initial minimal welcome (persist optional) ---------- */
+  addMessage(voice.greet, 'ai');
+
+  /* ---------- accessibility ---------- */
+  document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeChat(); });
+
+  /* ---------- expose dev helpers ---------- */
+  window.fomaFairy = { open: openChat, close: closeChat, catalog, findMatches };
+
+})();
+</script>
+
 <body>
 
   <!-- Impact bar -->

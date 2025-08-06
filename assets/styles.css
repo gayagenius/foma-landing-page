@@ -350,4 +350,28 @@ body{
 /* accessibility: focus outlines for keyboard users */
 a:focus, button:focus, .btn:focus { outline: 3px solid rgba(255,155,179,0.16); outline-offset: 4px; border-radius:8px; }
 
+/* ---------- FIX: DONATE + CHAT HELPER POSITIONING ---------- */
+.sticky-donate {
+  position: fixed;
+  right: 20px;
+  bottom: 90px; /* lifts donate above chat helper */
+  background: linear-gradient(180deg, var(--primary), #ff6d8f);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-floating);
+  z-index: 10000;
+  transition: transform .22s var(--ease);
+}
+.sticky-donate:hover {
+  transform: translateY(-2px);
+}
+
+.chat-helper {
+  z-index: 9999; /* keeps chat visible but under donate */
+}
+
+
 /* ---------- end of stylesheet ---------- */
